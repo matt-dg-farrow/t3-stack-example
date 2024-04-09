@@ -5,7 +5,12 @@ import Link from "next/link";
 import { api } from "~/utils/api";
 
 export default function Home() {
+  const { data: sessionData } = useSession();
   const hello = api.post.hello.useQuery({ text: "from tRPC" });
+
+  const create = api.post.create.useMutation();
+
+  const latestResult = api.post.getLatest.useQuery();
 
   return (
     <>
@@ -48,6 +53,14 @@ export default function Home() {
               {hello.data ? hello.data.greeting : "Loading tRPC query..."}
             </p>
             <AuthShowcase />
+            {sessionData && (
+              <button onClick={() => create.mutate({ name: "John" })}>
+                Create post
+              </button>
+            )}
+            {latestResult.data ? (
+              <div>{`${latestResult.data.name}`}</div>
+            ) : null}
           </div>
         </div>
       </main>
@@ -60,7 +73,7 @@ function AuthShowcase() {
 
   const { data: secretMessage } = api.post.getSecretMessage.useQuery(
     undefined, // no input
-    { enabled: sessionData?.user !== undefined }
+    { enabled: sessionData?.user !== undefined },
   );
 
   return (
